@@ -1,33 +1,32 @@
 const { ScramjetController } = $scramjetLoadController();
 
 const scramjet = new ScramjetController({
-
 	files: {
 		wasm: "/scram/scramjet.wasm.wasm",
 		all: "/scram/scramjet.all.js",
 		sync: "/scram/scramjet.sync.js",
 	},
-
 });
 
-(async () => {
-  try {
-    if (navigator.serviceWorker) {
+let serviceWorkerSupported = false;
+
+// Check if service workers are supported
+if ('serviceWorker' in navigator) {
+  (async () => {
+    try {
       await scramjet.init();
       await navigator.serviceWorker.register("/sw.js");
-    } else {
-      console.warn("Service workers not supported");
-      // Disable proxy functionality when service workers are not supported
-      document.getElementById("proxysel").disabled = true;
-      document.getElementById("idk").querySelector('button[type="submit"]').disabled = true;
+      serviceWorkerSupported = true;
+      console.log("Service workers initialized successfully");
+    } catch (e) {
+      console.error("Failed to initialize service workers:", e);
+      serviceWorkerSupported = false;
     }
-  } catch (e) {
-    console.error("Failed to initialize Scramjet:", e);
-    // Disable proxy functionality when service workers are not supported
-    document.getElementById("proxysel").disabled = true;
-    document.getElementById("idk").querySelector('button[type="submit"]').disabled = true;
-  }
-})();
+  })();
+} else {
+  console.warn("Service workers not supported in this environment");
+  serviceWorkerSupported = false;
+}
 
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 const wispUrl =
@@ -66,11 +65,38 @@ function search(input) {
 
 // Initialize transport after page loads
 document.addEventListener("DOMContentLoaded", async () => {
-  await setTransport("epoxy");
+  try {
+    await setTransport("epoxy");
+  } catch (e) {
+    console.error("Failed to set transport:", e);
+  }
+  
+  // Disable proxy functionality if service workers are not supported
+  if (!serviceWorkerSupported) {
+    const proxySelect = document.getElementById("proxysel");
+    const submitButton = document.getElementById("idk").querySelector('button[type="submit"]');
+    const urlInput = document.getElementById("url");
+    
+    if (proxySelect) proxySelect.disabled = true;
+    if (submitButton) submitButton.disabled = true;
+    if (urlInput) urlInput.placeholder = "Proxy not available - Service Workers not supported";
+    
+    // Add a notice to the page
+    const notice = document.createElement("div");
+    notice.style.cssText = "background: #ffebee; color: #c62828; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ef5350;";
+    notice.textContent = "Proxy functionality is not available in this environment (Service Workers not supported)";
+    document.body.insertBefore(notice, document.getElementById("idk"));
+  }
 });
 
 document.getElementById("idk").addEventListener("submit", async (event) => {
   event.preventDefault();
+  
+  if (!serviceWorkerSupported) {
+    alert("Proxy functionality is not available - Service Workers are not supported in this environment");
+    return;
+  }
+  
   let fixedurl = search(document.getElementById("url").value);
   let url;
   if (document.getElementById("proxysel").value === "uv") {
