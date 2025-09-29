@@ -26,3 +26,5 @@ async function handleRequest(event) {
 }
 
 self.addEventListener('fetch', (event) => {
+}
+)
