@@ -12,8 +12,8 @@ const scramjet = new ScramjetController({
 
 try {
   if (navigator.serviceWorker) {
-    scramjet.init();
-    navigator.serviceWorker.register("/sw.js");
+    await scramjet.init();
+    await navigator.serviceWorker.register("/sw.js");
   } else {
     console.warn("Service workers not supported");
   }
@@ -27,6 +27,7 @@ const wispUrl =
   "://" +
   location.host +
   "/wisp/";
+const bareUrl = location.protocol + "//" + location.host + "/bare/";
 
 async function setTransport(transportsel) {
   switch (transportsel) {
@@ -55,7 +56,10 @@ function search(input) {
   return template.replace("%s", encodeURIComponent(input));
 }
 
-setTransport("epoxy");
+// Initialize transport after page loads
+document.addEventListener("DOMContentLoaded", async () => {
+  await setTransport("epoxy");
+});
 
 document.getElementById("idk").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -63,6 +67,8 @@ document.getElementById("idk").addEventListener("submit", async (event) => {
   let url;
   if (document.getElementById("proxysel").value === "uv") {
     url = __uv$config.prefix + __uv$config.encodeUrl(fixedurl);
-  } else url = scramjet.encodeUrl(fixedurl);
+  } else {
+    url = scramjet.encodeUrl(fixedurl);
+  }
   document.getElementById("iframe").src = url;
 });
