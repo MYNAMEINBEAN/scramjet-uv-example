@@ -27,6 +27,7 @@ const wispUrl =
   "://" +
   location.host +
   "/wisp/";
+const bareUrl = location.origin + "/bare/";
 
 async function setTransport(transportsel) {
   switch (transportsel) {
