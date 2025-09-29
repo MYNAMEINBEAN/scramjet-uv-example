@@ -17,9 +17,15 @@ const scramjet = new ScramjetController({
       await navigator.serviceWorker.register("/sw.js");
     } else {
       console.warn("Service workers not supported");
+      // Disable proxy functionality when service workers are not supported
+      document.getElementById("proxysel").disabled = true;
+      document.getElementById("idk").querySelector('button[type="submit"]').disabled = true;
     }
   } catch (e) {
     console.error("Failed to initialize Scramjet:", e);
+    // Disable proxy functionality when service workers are not supported
+    document.getElementById("proxysel").disabled = true;
+    document.getElementById("idk").querySelector('button[type="submit"]').disabled = true;
   }
 })();
 
