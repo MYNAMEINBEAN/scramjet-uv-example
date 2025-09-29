@@ -15,6 +15,13 @@ import wisp from "wisp-server-node";
 const bare = createBareServer("/bare/");
 const app = express();
 
+// Enable cross-origin isolation for WASM/SAB (required by Scramjet)
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  next();
+});
+
 app.use(express.static("public"));
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
@@ -33,9 +40,12 @@ server.on("request", (req, res) => {
 server.on("upgrade", (req, socket, head) => {
   if (bare.shouldRoute(req)) {
     bare.routeUpgrade(req, socket, head);
-  } else if (req.url.endsWith("/wisp/")) {
-    wisp.routeRequest(req, socket, head);
-  } else socket.end();
+  } else {
+    const pathname = new URL(req.url, "http://localhost").pathname;
+    if (pathname === "/wisp/") {
+      wisp.routeRequest(req, socket, head);
+    } else socket.end();
+  }
 });
 
 let port = parseInt(process.env.PORT || "");
