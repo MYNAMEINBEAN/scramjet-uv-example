@@ -13,7 +13,7 @@ const scramjet = new ScramjetController({
 try {
   if (navigator.serviceWorker) {
     scramjet.init();
-    navigator.serviceWorker.register("./sw.js");
+    navigator.serviceWorker.register("/sw.js");
   } else {
     console.warn("Service workers not supported");
   }

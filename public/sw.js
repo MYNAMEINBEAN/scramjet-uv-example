@@ -9,7 +9,7 @@ const scramjet = new ScramjetServiceWorker()
 
 async function handleRequest(event) {
   await scramjet.loadConfig()
-  if (uv.route(event)) {
+  if (event.request.url.includes('/service/')) {
     return await uv.fetch(event)
   }
   if (scramjet.route(event)) {
