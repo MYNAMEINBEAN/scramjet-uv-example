@@ -43,7 +43,7 @@ async function setTransport(transportsel) {
   }
 }
 function search(input) {
-  let template = "https://www.google.com/search?q=%s";
+  let template = "https://duckduckgo.com/?q=%s";
   try {
     return new URL(input).toString();
   } catch (err) {}
