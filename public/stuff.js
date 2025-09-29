@@ -10,16 +10,18 @@ const scramjet = new ScramjetController({
 
 });
 
-try {
-  if (navigator.serviceWorker) {
-    await scramjet.init();
-    await navigator.serviceWorker.register("/sw.js");
-  } else {
-    console.warn("Service workers not supported");
+(async () => {
+  try {
+    if (navigator.serviceWorker) {
+      await scramjet.init();
+      await navigator.serviceWorker.register("/sw.js");
+    } else {
+      console.warn("Service workers not supported");
+    }
+  } catch (e) {
+    console.error("Failed to initialize Scramjet:", e);
   }
-} catch (e) {
-  console.error("Failed to initialize Scramjet:", e);
-}
+})();
 
 const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 const wispUrl =
